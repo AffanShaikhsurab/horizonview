@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAISettings } from '@/hooks/use-ai-settings'
 import { useMissionsWithProjects } from '@/hooks/use-horizon'
 import { getAIProvider } from '@/lib/ai-provider'
@@ -10,6 +11,7 @@ interface CommandBarProps {
 }
 
 export function CommandBar({ onCommand }: CommandBarProps) {
+    const router = useRouter()
     const escapeHtml = (s: string) =>
         s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
     const escapeAttr = (s: string) => s.replace(/"/g, '&quot;')
@@ -219,29 +221,53 @@ export function CommandBar({ onCommand }: CommandBarProps) {
         e.preventDefault()
         if (!input.trim()) return
 
+        const lower = input.toLowerCase()
         console.info('CommandBar: submit', { input })
+        
+        const isProjectQuery = [
+            'project',
+            'projects',
+            'working on',
+            'what am i',
+            'focus',
+            'focus on',
+            'should i focus',
+            'what should i focus',
+            'what should i focus on',
+            'analyze',
+            'analysis',
+            'overview',
+            'status'
+        ].some(i => lower.includes(i))
+        
         if (onCommand) {
             onCommand(input)
         }
 
-        setFeedback(`Processing: "${input}"`)
-        setIsVisible(true)
-        const ask = input
-        setInput('')
-
-        const analysis = await analyzeProjects(ask)
-        if (analysis) {
-            setFeedback(analysis)
+        if (isProjectQuery) {
+            setFeedback(`Processing: "${input}"`)
             setIsVisible(true)
-            console.info('CommandBar: analysis shown')
-        } else {
-            console.info('CommandBar: no analysis produced')
-        }
+            const ask = input
+            setInput('')
 
-        setTimeout(() => {
-            setIsVisible(false)
-            setTimeout(() => setFeedback(null), 500)
-        }, analysis ? 6000 : 3000)
+            const analysis = await analyzeProjects(ask)
+            if (analysis) {
+                setFeedback(analysis)
+                setIsVisible(true)
+                console.info('CommandBar: analysis shown')
+            } else {
+                console.info('CommandBar: no analysis produced')
+            }
+
+            setTimeout(() => {
+                setIsVisible(false)
+                setTimeout(() => setFeedback(null), 500)
+            }, analysis ? 6000 : 3000)
+        } else {
+            const query = input
+            setInput('')
+            router.push(`/chat?q=${encodeURIComponent(query)}`)
+        }
     }
 
     return (
