@@ -2897,6 +2897,12 @@ a {
   margin: 0 0 8px 0;
 }
 
+.error-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .retry-btn {
   display: inline-flex;
   align-items: center;

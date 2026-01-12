@@ -7,7 +7,8 @@ import { useAISettings } from '@/hooks/use-ai-settings'
 import { getAIProvider } from '@/lib/ai-provider'
 import { useMissionsWithProjects } from '@/hooks/use-horizon'
 import { MarkdownRenderer } from '@/components/assistant-ui/markdown-text'
-import { SendIcon, CopyIcon, CheckIcon, RefreshCwIcon, SparklesIcon, UserIcon, BotIcon, ArrowDownIcon, XIcon, PlusIcon, Trash2Icon, Edit2Icon } from 'lucide-react'
+import { AISettings } from '@/components/ai-settings'
+import { SendIcon, CopyIcon, CheckIcon, RefreshCwIcon, SparklesIcon, UserIcon, BotIcon, ArrowDownIcon, XIcon, PlusIcon, Trash2Icon, Edit2Icon, SettingsIcon } from 'lucide-react'
 
 function CopyButton({ content }: { content: string }) {
     const [copied, setCopied] = useState(false)
@@ -27,7 +28,7 @@ function CopyButton({ content }: { content: string }) {
     )
 }
 
-function WelcomeScreen({ onStartChat }: { onStartChat: (message: string) => void }) {
+function WelcomeScreen({ onStartChat, onOpenSettings }: { onStartChat: (message: string) => void, onOpenSettings: () => void }) {
     const suggestions = [
         "What should I focus on today?",
         "Analyze my current project load",
@@ -56,12 +57,21 @@ function WelcomeScreen({ onStartChat }: { onStartChat: (message: string) => void
                         {suggestion}
                     </button>
                 ))}
+                <button
+                    className="aui-suggestion-btn aui-settings-btn"
+                    onClick={onOpenSettings}
+                    role="listitem"
+                    aria-label="Configure AI keys"
+                >
+                    <SettingsIcon className="size-4" />
+                    Configure AI Keys
+                </button>
             </div>
         </div>
     )
 }
 
-function MessageBubble({ message, onRetry, isNew }: { message: any, onRetry?: () => void, isNew?: boolean }) {
+function MessageBubble({ message, onRetry, onOpenSettings, isNew }: { message: any, onRetry?: () => void, onOpenSettings?: () => void, isNew?: boolean }) {
     const isUser = message.role === 'user'
     
     return (
@@ -77,16 +87,28 @@ function MessageBubble({ message, onRetry, isNew }: { message: any, onRetry?: ()
                 {message.error && (
                     <div className="message-error" role="alert" aria-live="assertive">
                         <p>{message.error}</p>
-                        {onRetry && (
-                            <button
-                                onClick={onRetry}
-                                className="retry-btn"
-                                aria-label="Retry sending this message"
-                            >
-                                <RefreshCwIcon className="size-4" />
-                                Retry
-                            </button>
-                        )}
+                        <div className="error-actions">
+                            {onOpenSettings && (
+                                <button
+                                    onClick={onOpenSettings}
+                                    className="retry-btn"
+                                    aria-label="Configure AI keys"
+                                >
+                                    <SettingsIcon className="size-4" />
+                                    Configure Keys
+                                </button>
+                            )}
+                            {onRetry && (
+                                <button
+                                    onClick={onRetry}
+                                    className="retry-btn"
+                                    aria-label="Retry sending this message"
+                                >
+                                    <RefreshCwIcon className="size-4" />
+                                    Retry
+                                </button>
+                            )}
+                        </div>
                     </div>
                 )}
                 <div className="message-text" role="document">
@@ -228,6 +250,7 @@ export function ChatInterface() {
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const [newMessageIds, setNewMessageIds] = useState<Set<string>>(new Set())
     const [hasNewMessages, setHasNewMessages] = useState(false)
+    const [isAISettingsOpen, setIsAISettingsOpen] = useState(false)
     const lastMessageCountRef = useRef(0)
     const streamingUpdateTimerRef = useRef<NodeJS.Timeout | null>(null)
     const lastStreamingUpdateRef = useRef(0)
@@ -250,41 +273,48 @@ export function ChatInterface() {
     
     const messages = getCurrentMessages()
     
-    return <ChatInterfaceContent 
-        router={router}
-        messagesEndRef={messagesEndRef}
-        inputRef={inputRef}
-        input={input}
-        setInput={setInput}
-        isSending={isSending}
-        setIsSending={setIsSending}
-        showScrollButton={showScrollButton}
-        setShowScrollButton={setShowScrollButton}
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        newMessageIds={newMessageIds}
-        setNewMessageIds={setNewMessageIds}
-        hasNewMessages={hasNewMessages}
-        setHasNewMessages={setHasNewMessages}
-        lastMessageCountRef={lastMessageCountRef}
-        streamingUpdateTimerRef={streamingUpdateTimerRef}
-        lastStreamingUpdateRef={lastStreamingUpdateRef}
-        config={config}
-        hasAnyProvider={hasAnyProvider}
-        missions={missions}
-        currentSessionId={currentSessionId}
-        setCurrentSessionId={setCurrentSessionId}
-        createSession={createSession}
-        addMessage={addMessage}
-        updateMessage={updateMessage}
-        getCurrentMessages={getCurrentMessages}
-        getCurrentSession={getCurrentSession}
-        markMessageError={markMessageError}
-        setMessageStreaming={setMessageStreaming}
-        streamMessageUpdate={streamMessageUpdate}
-        flushStreamingUpdates={flushStreamingUpdates}
-        messages={messages}
-    />
+    return (
+        <>
+            <ChatInterfaceContent 
+                router={router}
+                messagesEndRef={messagesEndRef}
+                inputRef={inputRef}
+                input={input}
+                setInput={setInput}
+                isSending={isSending}
+                setIsSending={setIsSending}
+                showScrollButton={showScrollButton}
+                setShowScrollButton={setShowScrollButton}
+                sidebarOpen={sidebarOpen}
+                setSidebarOpen={setSidebarOpen}
+                newMessageIds={newMessageIds}
+                setNewMessageIds={setNewMessageIds}
+                hasNewMessages={hasNewMessages}
+                setHasNewMessages={setHasNewMessages}
+                isAISettingsOpen={isAISettingsOpen}
+                setIsAISettingsOpen={setIsAISettingsOpen}
+                lastMessageCountRef={lastMessageCountRef}
+                streamingUpdateTimerRef={streamingUpdateTimerRef}
+                lastStreamingUpdateRef={lastStreamingUpdateRef}
+                config={config}
+                hasAnyProvider={hasAnyProvider}
+                missions={missions}
+                currentSessionId={currentSessionId}
+                setCurrentSessionId={setCurrentSessionId}
+                createSession={createSession}
+                addMessage={addMessage}
+                updateMessage={updateMessage}
+                getCurrentMessages={getCurrentMessages}
+                getCurrentSession={getCurrentSession}
+                markMessageError={markMessageError}
+                setMessageStreaming={setMessageStreaming}
+                streamMessageUpdate={streamMessageUpdate}
+                flushStreamingUpdates={flushStreamingUpdates}
+                messages={messages}
+            />
+            <AISettings isOpen={isAISettingsOpen} onClose={() => setIsAISettingsOpen(false)} />
+        </>
+    )
 }
 
 function ChatInterfaceContent({
@@ -303,6 +333,8 @@ function ChatInterfaceContent({
     setNewMessageIds,
     hasNewMessages,
     setHasNewMessages,
+    isAISettingsOpen,
+    setIsAISettingsOpen,
     lastMessageCountRef,
     streamingUpdateTimerRef,
     lastStreamingUpdateRef,
@@ -409,10 +441,35 @@ function ChatInterfaceContent({
     const handleSubmit = async (messageContent?: string) => {
         const content = messageContent || input.trim()
         if (!content || isSending) return
+
+        const isConfigCommand = /^(ai\s*settings?|settings?|configure\s*ai|api\s*keys?)$/i.test(content)
+        
+        if (isConfigCommand) {
+            setInput('')
+            setIsAISettingsOpen(true)
+            return
+        }
         
         if (!hasAnyProvider) {
-            alert('Please configure an AI provider in settings first.')
-            router.push('/')
+            setIsSending(true)
+            setInput('')
+            
+            const sessionId = currentSessionId || createSession(content)
+            setCurrentSessionId(sessionId)
+            
+            addMessage(sessionId, {
+                role: 'user',
+                content,
+            })
+            
+            const assistantMessageId = `msg_${Date.now()}_assistant`
+            addMessage(sessionId, {
+                role: 'assistant',
+                content: '',
+                isStreaming: false,
+                error: 'Please configure your AI keys to use Horizon Assistant.',
+            })
+            setIsSending(false)
             return
         }
         
@@ -567,7 +624,10 @@ function ChatInterfaceContent({
             
             <div className="chat-messages" role="log" aria-live="polite" aria-label="Chat messages">
                 {messages.length === 0 ? (
-                    <WelcomeScreen onStartChat={(msg) => setInput(msg)} />
+                    <WelcomeScreen 
+                        onStartChat={(msg) => setInput(msg)} 
+                        onOpenSettings={() => setIsAISettingsOpen(true)} 
+                    />
                 ) : (
                     <>
                         {messages.map((message: any, index: number) => (
@@ -575,6 +635,7 @@ function ChatInterfaceContent({
                                 key={message.id}
                                 message={message}
                                 onRetry={message.error ? () => handleRetry(index) : undefined}
+                                onOpenSettings={message.error ? () => setIsAISettingsOpen(true) : undefined}
                                 isNew={newMessageIds.has(message.id)}
                             />
                         ))}
