@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode, useMemo, useEffect, useState, useCallback } from 'react'
+import { ReactNode, useMemo, useEffect, useState } from 'react'
 import { AssistantRuntimeProvider } from '@assistant-ui/react'
 import { useChatRuntime, AssistantChatTransport } from '@assistant-ui/react-ai-sdk'
 import { useAISettings } from '@/hooks/use-ai-settings'
@@ -16,7 +16,9 @@ export function AssistantProvider({ children }: AssistantProviderProps) {
     const [mounted, setMounted] = useState(false)
 
     useEffect(() => {
-        setMounted(true)
+        requestAnimationFrame(() => {
+            setMounted(true)
+        })
     }, [])
 
     // Create context object

@@ -5,12 +5,11 @@ import { AssistantModalButton } from './assistant-ui/assistant-modal-button'
 interface AssistantModalProps {
     isOpen?: boolean
     onClose?: () => void
-    initialPrompt?: string | null
 }
 
 // Legacy wrapper for backward compatibility
 // The new implementation uses a floating button pattern
-export function AssistantModal({ isOpen, onClose, initialPrompt }: AssistantModalProps) {
+export function AssistantModal({ isOpen, onClose }: AssistantModalProps) {
     // For backward compatibility, we can still render the modal
     // But the new pattern is to use AssistantModalButton as a floating button
     if (!isOpen) return null
