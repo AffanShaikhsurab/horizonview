@@ -250,10 +250,43 @@ export function useUpdateProject() {
       if (error) throw error
       return data as Project
     },
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.missionsWithProjects })
+      const previous = queryClient.getQueryData<MissionWithProjects[]>(queryKeys.missionsWithProjects)
+      if (!previous) return { previous }
+      const sourceMission = previous.find(m => m.projects.some(p => p.id === variables.id))
+      const targetMission = previous.find(m => m.id === variables.mission_id)
+      if (!sourceMission || !targetMission || sourceMission.id === targetMission.id) {
+        return { previous }
+      }
+      const movedProject = sourceMission.projects.find(p => p.id === variables.id)
+      if (!movedProject) return { previous }
+      const next: MissionWithProjects[] = previous.map(m => {
+        if (m.id === sourceMission.id) {
+          return { ...m, projects: m.projects.filter(p => p.id !== variables.id) }
+        }
+        if (m.id === targetMission.id) {
+          return { ...m, projects: [{ ...movedProject, mission_id: targetMission.id }, ...m.projects] }
+        }
+        return m
+      })
+      queryClient.setQueryData(queryKeys.missionsWithProjects, next)
+      return { previous }
+    },
+    onError: (_err, _variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.missionsWithProjects, context.previous)
+      }
+    },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.projects })
       queryClient.invalidateQueries({ queryKey: queryKeys.missionsWithProjects })
       queryClient.invalidateQueries({ queryKey: queryKeys.projectsByMission(data.mission_id) })
+    },
+    onSettled: (_data, _error, variables) => {
+      if (variables?.mission_id) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.projectsByMission(variables.mission_id) })
+      }
     },
   })
 }

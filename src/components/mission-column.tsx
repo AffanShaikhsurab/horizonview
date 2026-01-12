@@ -8,14 +8,48 @@ interface MissionColumnProps {
   onArchiveProject?: (projectId: string, missionId: string) => void
   onEditProject?: (project: Project) => void
   onAddProject?: () => void
+  onDropProject?: (projectId: string, targetMissionId: string) => void
 }
 
-export function MissionColumn({ mission, onArchiveProject, onEditProject, onAddProject }: MissionColumnProps) {
+export function MissionColumn({ mission, onArchiveProject, onEditProject, onAddProject, onDropProject }: MissionColumnProps) {
   // Filter out archived projects from display
   const activeProjects = mission.projects.filter(p => p.status !== 'Archived')
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    e.currentTarget.classList.add('drag-over')
+  }
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    e.currentTarget.classList.add('drag-over')
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.currentTarget.classList.remove('drag-over')
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.currentTarget.classList.remove('drag-over')
+    const projectId =
+      e.dataTransfer.getData('application/horizon-project') ||
+      e.dataTransfer.getData('text/plain')
+    if (projectId && onDropProject) {
+      onDropProject(projectId, mission.id)
+    }
+  }
+
   return (
-    <div className="mission-column">
+    <div
+      className="mission-column"
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <div
         className="mission-header"
         style={{ borderColor: mission.color }}
@@ -43,6 +77,10 @@ export function MissionColumn({ mission, onArchiveProject, onEditProject, onAddP
           missionColor={mission.color}
           onArchive={onArchiveProject ? (id) => onArchiveProject(id, mission.id) : undefined}
           onEdit={onEditProject}
+          onDragStart={(e, project) => {
+            e.dataTransfer.setData('text/plain', project.id)
+            e.dataTransfer.effectAllowed = 'move'
+          }}
         />
       ))}
 

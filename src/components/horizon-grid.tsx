@@ -1,7 +1,7 @@
 'use client'
 
 import { MissionColumn } from './mission-column'
-import { useArchiveProject } from '@/hooks/use-horizon'
+import { useArchiveProject, useUpdateProject } from '@/hooks/use-horizon'
 import type { MissionWithProjects, Project } from '@/types/database'
 
 interface HorizonGridProps {
@@ -12,12 +12,24 @@ interface HorizonGridProps {
 
 export function HorizonGrid({ missions, onEditProject, onAddProject }: HorizonGridProps) {
   const archiveProject = useArchiveProject()
+  const updateProject = useUpdateProject()
 
   const handleArchive = async (projectId: string, missionId: string) => {
     try {
       await archiveProject.mutateAsync({ id: projectId, missionId })
     } catch (error) {
       console.error('Failed to archive project:', error)
+    }
+  }
+
+  const handleDropProject = async (projectId: string, targetMissionId: string) => {
+    try {
+      const currentMissionId =
+        missions.find(m => m.projects.some(p => p.id === projectId))?.id
+      if (currentMissionId === targetMissionId) return
+      await updateProject.mutateAsync({ id: projectId, mission_id: targetMissionId })
+    } catch (error) {
+      console.error('Failed to move project:', error)
     }
   }
 
@@ -30,6 +42,7 @@ export function HorizonGrid({ missions, onEditProject, onAddProject }: HorizonGr
           onArchiveProject={handleArchive}
           onEditProject={onEditProject}
           onAddProject={() => onAddProject?.(mission.id)}
+          onDropProject={handleDropProject}
         />
       ))}
     </main>

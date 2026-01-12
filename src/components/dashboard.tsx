@@ -10,6 +10,8 @@ import { CreateProjectModal } from './create-project-modal'
 import { CreateMissionModal } from './create-mission-modal'
 import { AISettings } from './ai-settings'
 import { GitHubImportModal } from './github-import-modal'
+import { AssistantModalButton } from './assistant-ui/assistant-modal-button'
+import { AssistantProvider } from '@/providers/assistant-provider'
 import type { Project } from '@/types/database'
 
 export function Dashboard() {
@@ -44,62 +46,68 @@ export function Dashboard() {
     const allProjects = missions?.flatMap((m) => m.projects) ?? []
 
     return (
-        <div className="app-container">
-            <Header 
-                projects={allProjects}
-                onImportClick={() => setIsGitHubModalOpen(true)}
-                onNewMissionClick={() => setIsNewMissionModalOpen(true)}
-            />
-
-            <HorizonGrid
-                missions={missions ?? []}
-                onEditProject={setEditingProject}
-                onAddProject={setAddingToMissionId}
-            />
-
-            <CommandBar
-                onCommand={(cmd) => {
-                    const lower = cmd.toLowerCase()
-                    if (lower.includes('github') || lower.includes('import')) {
-                        setIsGitHubModalOpen(true)
-                    } else if (lower.includes('settings') || lower.includes('ai')) {
-                        setIsAISettingsOpen(true)
-                    } else if (lower.includes('mission') && (lower.includes('add') || lower.includes('new') || lower.includes('create'))) {
-                        setIsNewMissionModalOpen(true)
-                    }
-                }}
-            />
-
-            {editingProject && (
-                <ProjectModal
-                    project={editingProject}
-                    isOpen={true}
-                    onClose={() => setEditingProject(null)}
+        <AssistantProvider>
+            <div className="app-container">
+                <Header
+                    projects={allProjects}
+                    onImportClick={() => setIsGitHubModalOpen(true)}
+                    onNewMissionClick={() => setIsNewMissionModalOpen(true)}
                 />
-            )}
 
-            {addingToMissionId && (
-                <CreateProjectModal
-                    missionId={addingToMissionId}
-                    isOpen={true}
-                    onClose={() => setAddingToMissionId(null)}
+                <HorizonGrid
+                    missions={missions ?? []}
+                    onEditProject={setEditingProject}
+                    onAddProject={setAddingToMissionId}
                 />
-            )}
 
-            <CreateMissionModal
-                isOpen={isNewMissionModalOpen}
-                onClose={() => setIsNewMissionModalOpen(false)}
-            />
+                <CommandBar
+                    onCommand={(cmd) => {
+                        const lower = cmd.toLowerCase()
+                        if (lower.includes('github') || lower.includes('import')) {
+                            setIsGitHubModalOpen(true)
+                        } else if (lower.includes('settings') || lower.includes('ai')) {
+                            setIsAISettingsOpen(true)
+                        } else if (lower.includes('mission') && (lower.includes('add') || lower.includes('new') || lower.includes('create'))) {
+                            setIsNewMissionModalOpen(true)
+                        }
+                        // Note: Project analysis now handled by floating assistant button
+                    }}
+                />
 
-            <GitHubImportModal
-                isOpen={isGitHubModalOpen}
-                onClose={() => setIsGitHubModalOpen(false)}
-            />
+                {editingProject && (
+                    <ProjectModal
+                        project={editingProject}
+                        isOpen={true}
+                        onClose={() => setEditingProject(null)}
+                    />
+                )}
 
-            <AISettings
-                isOpen={isAISettingsOpen}
-                onClose={() => setIsAISettingsOpen(false)}
-            />
-        </div>
+                {addingToMissionId && (
+                    <CreateProjectModal
+                        missionId={addingToMissionId}
+                        isOpen={true}
+                        onClose={() => setAddingToMissionId(null)}
+                    />
+                )}
+
+                <CreateMissionModal
+                    isOpen={isNewMissionModalOpen}
+                    onClose={() => setIsNewMissionModalOpen(false)}
+                />
+
+                <GitHubImportModal
+                    isOpen={isGitHubModalOpen}
+                    onClose={() => setIsGitHubModalOpen(false)}
+                />
+
+                <AISettings
+                    isOpen={isAISettingsOpen}
+                    onClose={() => setIsAISettingsOpen(false)}
+                />
+
+                {/* Floating Assistant Button */}
+                <AssistantModalButton />
+            </div>
+        </AssistantProvider>
     )
 }

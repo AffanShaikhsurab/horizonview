@@ -21,7 +21,7 @@ export function Header({ projects, hideFocusBtn = false, onImportClick, onNewMis
                 </Link>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <div className="header-right">
                 <EnergyWidget projects={projects} />
 
                 {onImportClick && (

@@ -20,8 +20,34 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+  if (!publishableKey) {
+    return (
+      <html lang="en">
+        <body className={inter.variable} style={{ 
+          backgroundColor: '#050505', 
+          color: '#ededed', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          height: '100vh',
+          margin: 0,
+          fontFamily: 'var(--font-inter), sans-serif'
+        }}>
+          <div style={{ textAlign: 'center', padding: '20px' }}>
+            <h1 style={{ color: '#ef4444', marginBottom: '10px' }}>Configuration Error</h1>
+            <p style={{ opacity: 0.7 }}>
+              The Clerk Publishable Key is missing. Please set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY in your environment variables.
+            </p>
+          </div>
+        </body>
+      </html>
+    );
+  }
+
   return (
-    <ClerkProvider>
+    <ClerkProvider publishableKey={publishableKey}>
       <html lang="en">
         <body className={inter.variable}>
           <AuthProvider>

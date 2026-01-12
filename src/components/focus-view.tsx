@@ -75,33 +75,36 @@ export function FocusView({ missions }: FocusViewProps) {
             {/* Hero Section */}
             <div className="focus-hero">
                 <div className="focus-hero-content">
-                    <div className="focus-ring-large" style={{ borderColor: health.color }}>
+                    <div className="focus-ring-large" style={{ borderColor: health.color, boxShadow: `0 0 60px ${health.color}20` }}>
                         <span className="value" style={{ color: health.color }}>{metrics.focusScore}</span>
                         <span className="label" style={{ color: health.color }}>{health.label}</span>
                     </div>
 
                     <div className="focus-hero-stats">
                         <div className="flex items-center gap-4 mb-2">
-                            <Link href="/" className="text-dim hover:text-white transition-colors">
+                            <Link href="/" className="back-link">
                                 ← Back to Dashboard
                             </Link>
                         </div>
                         <h1 className="focus-hero-title">Mission Alignment</h1>
-                        <p className="text-dim text-lg">
+                        <p className="focus-hero-description">
                             You are currently using <strong>{metrics.usedEnergy}%</strong> of your mission energy across <strong>{metrics.activeMissionCount}</strong> active missions.
                             {metrics.activeMissionCount > 2 && " Consider narrowing your focus."}
                         </p>
 
                         <div className="stat-grid">
                             <div className="stat-item">
+                                <div className="stat-icon">⚡</div>
                                 <h4>Active Projects</h4>
                                 <div className="stat-value">{metrics.activeProjects}</div>
                             </div>
                             <div className="stat-item">
+                                <div className="stat-icon">📊</div>
                                 <h4>Total Projects</h4>
                                 <div className="stat-value">{metrics.totalProjects}</div>
                             </div>
                             <div className="stat-item">
+                                <div className="stat-icon">📈</div>
                                 <h4>Avg Progress</h4>
                                 <div className="stat-value">{metrics.avgProgress}%</div>
                             </div>

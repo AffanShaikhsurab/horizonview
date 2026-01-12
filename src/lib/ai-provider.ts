@@ -34,6 +34,7 @@ export class AIProvider {
             throw new Error('Gemini client not configured')
         }
 
+        console.info('AIProvider: calling Gemini', { model: GEMINI_MODEL })
         // Convert messages to Gemini format
         const systemMessage = messages.find(m => m.role === 'system')
         const contents = messages
@@ -49,6 +50,7 @@ export class AIProvider {
             config: systemMessage ? { systemInstruction: systemMessage.content } : undefined
         })
 
+        console.info('AIProvider: Gemini response received', { length: response.text?.length ?? 0 })
         return {
             text: response.text ?? '',
             provider: 'gemini',
@@ -61,6 +63,7 @@ export class AIProvider {
             throw new Error('Groq client not configured')
         }
 
+        console.info('AIProvider: calling Groq', { model: GROQ_MODEL })
         const response = await this.groqClient.chat.completions.create({
             messages: messages.map(m => ({
                 role: m.role,
@@ -71,6 +74,7 @@ export class AIProvider {
             max_tokens: 1024
         })
 
+        console.info('AIProvider: Groq response received', { hasChoices: !!response.choices?.length })
         return {
             text: response.choices[0]?.message?.content ?? '',
             provider: 'groq',
@@ -79,6 +83,7 @@ export class AIProvider {
     }
 
     async generateCompletion(messages: AIMessage[]): Promise<AIResponse> {
+        console.info('AIProvider: generateCompletion start', { providers: this.availableProviders })
         const errors: AIError[] = []
 
         // Try Gemini first
